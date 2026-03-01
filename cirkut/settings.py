@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-=osdpb*io%t71pu+2ars=5_1zrfz$vgp4fhjy+5^+5s1f+70ci
 DEBUG = True
 
 # Add '10.0.2.2' and also '*' for development convenience
-ALLOWED_HOSTS = ['10.0.2.2', '127.0.0.1', 'localhost', '0.0.0.0', 'fathomable-derelictly-brittaney.ngrok-free.dev']
+ALLOWED_HOSTS = ['10.0.2.2', '127.0.0.1', 'localhost', '0.0.0.0', 'fathomable-derelictly-brittaney.ngrok-free.dev', 'pedigreed-corine-gratefully.ngrok-free.dev']
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'channels',
 
     # Local apps
     'account',
@@ -59,6 +60,7 @@ MIDDLEWARE = [
 ]
 
 AUTH_USER_MODEL = 'account.User'
+ASGI_APPLICATION = 'cirkut.asgi.application'
 CROSS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'cirkut.urls'
@@ -78,7 +80,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'cirkut.wsgi.application'
+# WSGI_APPLICATION = 'cirkut.wsgi.application'
 
 
 # Database
@@ -123,6 +125,15 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
+#CSRF Verification Settings
+CSRF_TRUSTED_ORIGINS = ['https://pedigreed-corine-gratefully.ngrok-free.dev/', 'http://fathomable-derelictly-brittaney.ngrok-free.dev/']
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
