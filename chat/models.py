@@ -4,8 +4,15 @@ from django.conf import settings
 class Connection(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='connections')
     friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='connected_with')
+    room_name = models.CharField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Genarate automatically unique room name
+    def save(self, *args, **kwargs):
+        if not self.room_name:
+            sorted_users = sorted([self.user.id, self.friend.id])
+            self.room_name = f"room_{sorted_users[0]}_{sorted_users[1]}"
+        super().save(*args, **kwargs)
     class Meta:
         unique_together = ('user', 'friend')
 

@@ -15,6 +15,10 @@ class ChatConsumer(WebsocketConsumer):
             self.channel_name
         )
 
+        is_authenticated = self.scope['user'].is_authenticated
+        if not is_authenticated:
+            self.close()
+            return
         self.accept()
 
         # Previous messages fetch kora
@@ -36,14 +40,12 @@ class ChatConsumer(WebsocketConsumer):
     def receive(self, text_data):
         data = json.loads(text_data)
         message = data['message']
-        user_id = data.get('user')   # Postman theke pathano id
 
-        User = get_user_model()
-        try:
-            get_user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
+        user = self.scope['user']
+
+        if user.is_anonymous:
             self.send(text_data=json.dumps({
-                'error': 'User not found'
+                'error': 'Unauthorized'
             }))
             return
 
@@ -51,8 +53,8 @@ class ChatConsumer(WebsocketConsumer):
         new_msg = ChatMessage.objects.create(
             room_name=self.room_name,
             message=message,
-            user=get_user
-        )   
+            user=user
+        )
 
         # Group e send
         async_to_sync(self.channel_layer.group_send)(
@@ -60,11 +62,10 @@ class ChatConsumer(WebsocketConsumer):
             {
                 'type': 'chat_message',
                 'message': message,
-                'user': get_user.username,
+                'user': user.username,
                 'timestamp': new_msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
             }
         )
-
     def chat_message(self, event):
         # WebSocket-e message pathano
         self.send(text_data=json.dumps({
