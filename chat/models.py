@@ -25,3 +25,10 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"[{self.room_name}] {self.user}: {self.message}"
+
+class MessageNotificationToken(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    token = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.token}"

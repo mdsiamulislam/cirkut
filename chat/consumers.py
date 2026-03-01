@@ -2,7 +2,10 @@ import json
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
-from .models import ChatMessage
+
+from chat.serializers.utils.massage_notification import send_notification
+from .models import ChatMessage, MessageNotificationToken, Connection
+User = get_user_model()
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -56,6 +59,21 @@ class ChatConsumer(WebsocketConsumer):
             message=message,
             user=user
         )
+
+        # Get friend user
+        try:
+            connection = Connection.objects.get(room_name=self.room_name)
+            friend_user = connection.friend if connection.user == user else connection.user
+        except Connection.DoesNotExist:
+            friend_user = None
+
+        try:
+            token_obj = MessageNotificationToken.objects.get(user=friend_user)
+            token = token_obj.token
+        except MessageNotificationToken.DoesNotExist:
+            token = None
+        if token:
+            send_notification(token, user.first_name, message)
 
         # Group e send
         async_to_sync(self.channel_layer.group_send)(

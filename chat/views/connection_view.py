@@ -6,9 +6,11 @@ from rest_framework.permissions import IsAuthenticated
 from account.models import User
 from chat.serializers.connection_serializer import ConnectionSerializer
 from chat.models import Connection
+from chat.serializers.utils.massage_notification import send_notification
 
 
 class ConnectionListView(APIView):
+
     permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
@@ -30,3 +32,20 @@ class ConnectionListView(APIView):
         connection = Connection.objects.create(user=user, friend=friend_user)
         serializer = ConnectionSerializer(connection)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
+
+class NotificationTestView(APIView):
+    def get(self, request):
+        token = 'eJ89IigRShS-soaj6V0IJF:APA91bFfsKW0mqx3oSg410L7wNWJrTgGwHUfJ_IsCTv3YfDjtbJIYTkNVD3RQD_17ah6L5lYO_K7UV__IBQTI575kTQFdBEmH3ECxbN7cQwltiVgVuIhpf4'
+        title = 'Test Notification'
+        body = 'This is a test notification from Firebase.'
+        
+        # ফাংশন কল করা হচ্ছে
+        response = send_notification(token, title, body)
+        
+        # সাকসেস রেসপন্স ব্যাক করা হচ্ছে
+        return Response({
+            "message": "Notification process completed",
+            "firebase_response": response
+        })
