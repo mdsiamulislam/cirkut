@@ -26,7 +26,8 @@ class ChatConsumer(WebsocketConsumer):
         for msg in previous_messages:
             self.send(text_data=json.dumps({
                 'message': msg.message,
-                'user': msg.user.username, # User object theke username nawa
+                'user': msg.user.id,
+                'name': msg.user.first_name,
                 'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
             }))
 
@@ -62,7 +63,8 @@ class ChatConsumer(WebsocketConsumer):
             {
                 'type': 'chat_message',
                 'message': message,
-                'user': user.username,
+                'user': user.id,
+                'name': user.first_name,
                 'timestamp': new_msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
             }
         )
@@ -71,5 +73,6 @@ class ChatConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             'message': event['message'],
             'user': event['user'],
+            'name': event['name'],
             'timestamp': event['timestamp']
         }))
