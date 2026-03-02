@@ -81,11 +81,29 @@ class ChatConsumer(WebsocketConsumer):
             message=message,
             user=self.user
         )
+        
 
         # ফ্রেন্ডকে খুঁজে বের করা ও নোটিফিকেশন পাঠানো
         friend_user = self.get_friend_user()
         if friend_user:
             self.handle_notification(friend_user, message)
+            
+            friend_id = friend_user.id
+
+            async_to_sync(self.channel_layer.group_send)(
+            f"user_{friend_id}", # ফ্রেন্ডের পার্সোনাল গ্রুপে পাঠাচ্ছি
+            {
+                "friend_id": friend_id,
+                "type": "chat_list_update", # UserConsumer-এর মেথডটি কল হবে
+                "room_name": self.room_name,
+                "message": message,
+                "sender_id": self.user.id,
+                "sender_name": self.user.first_name,
+                "timestamp": str(new_msg.timestamp)
+            }
+        )
+
+        
 
         # গ্রুপে মেসেজ ব্রডকাস্টিং
         async_to_sync(self.channel_layer.group_send)(

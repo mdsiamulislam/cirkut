@@ -40,9 +40,30 @@ class UserConsumer(WebsocketConsumer):
             self.channel_name
         )
 
+
+
+    # Receive message from WebSocket
+    def receive(self, text_data):
+        data = json.loads(text_data)
+        
+        # Send to personal group
+        async_to_sync(self.channel_layer.group_send)(
+            self.group_name,
+            {
+                "friend_id": data.get('friend_id'),
+                'type': 'chat_list_update',
+                'room_name': data.get('room_name'),
+                'message': data.get('message'),
+                'sender_id': data.get('sender_id'),
+                'sender_name': data.get('sender_name'),
+                'timestamp': data.get('timestamp')
+            }
+        )
+
     # Home screen message update
     def chat_list_update(self, event):
         self.send(text_data=json.dumps({
+            "friend_id": event["friend_id"],
             "type": "chat_update",
             "room_name": event["room_name"],
             "message": event["message"],
