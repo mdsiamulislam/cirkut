@@ -7,7 +7,7 @@ def index(request):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>API — Base URL</title>
+<title>Cirkut - Connecting the world . In your Circle</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -63,83 +63,6 @@ def index(request):
     font-weight: 300;
     margin-bottom: 2.5rem;
   }
-
-  .url-box {
-    background: #161616;
-    border: 1px solid #2a2a2a;
-    border-radius: 6px;
-    padding: 1rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    text-align: left;
-  }
-
-  .url-box span {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.8rem;
-    color: #22c55e;
-    word-break: break-all;
-  }
-
-  .copy-btn {
-    background: none;
-    border: 1px solid #2a2a2a;
-    color: #666;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.4rem 0.75rem;
-    cursor: pointer;
-    border-radius: 4px;
-    white-space: nowrap;
-    transition: border-color 0.2s, color 0.2s;
-    flex-shrink: 0;
-  }
-  .copy-btn:hover { border-color: #22c55e; color: #22c55e; }
-
-  .routes {
-    list-style: none;
-    border: 1px solid #1e1e1e;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 2.5rem;
-    text-align: left;
-  }
-
-  .routes li {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid #1a1a1a;
-    font-size: 0.8rem;
-  }
-  .routes li:last-child { border-bottom: none; }
-
-  .method {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 0.2rem 0.5rem;
-    border-radius: 3px;
-    min-width: 44px;
-    text-align: center;
-  }
-  .get  { background: #0d2e1a; color: #22c55e; }
-  .post { background: #1a1a2e; color: #6090ff; }
-
-  .route-path {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.75rem;
-    color: #ccc;
-    flex: 1;
-  }
-
-  .route-desc { color: #555; font-size: 0.75rem; }
 
   .footer-note {
     font-size: 0.75rem;
