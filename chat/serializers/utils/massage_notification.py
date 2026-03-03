@@ -19,15 +19,20 @@ def send_notification(token, title, body):
             body=body,
         ),
         android=messaging.AndroidConfig(
-            priority='high', # এটি মেসেজ ডেলিভারি প্রায়োরিটি
+            priority='high',
             notification=messaging.AndroidNotification(
-                priority='max', # এটি দিয়ে পপ-আপ (Heads-up) নোটিফিকেশন নিশ্চিত হয়
+                priority='max',
                 default_sound=True,
                 notification_count=1,
+                icon='ic_notification',        # 👈 add this — must match your drawable file name
+                color='#0D1024',               # 👈 add this — your app primary color
             ),
         ),
         token=token,
     )
+
+    print(f"Sending notification to token: {token} with title: '{title}' and body: '{body}'")
+    
 
     # ৩. মেসেজ পাঠানো
     try:

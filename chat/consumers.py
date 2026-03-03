@@ -75,16 +75,26 @@ class ChatConsumer(WebsocketConsumer):
         if not self.user.is_authenticated:
             return
 
+        friend_user = self.get_friend_user()
+        is_friend_online = False
+        if friend_user:
+            try:
+                friend_presence = UserPresence.objects.get(user=friend_user)
+                is_friend_online = friend_presence.is_online
+            except UserPresence.DoesNotExist:
+                pass
+
         # ডাটাবেসে সেভ
         new_msg = ChatMessage.objects.create(
             room_name=self.room_name,
             message=message,
-            user=self.user
+            user=self.user,
+            is_read=is_friend_online
         )
         
 
         # ফ্রেন্ডকে খুঁজে বের করা ও নোটিফিকেশন পাঠানো
-        friend_user = self.get_friend_user()
+        
         if friend_user:
             self.handle_notification(friend_user, message)
             
