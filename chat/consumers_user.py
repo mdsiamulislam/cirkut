@@ -53,6 +53,7 @@ class UserConsumer(WebsocketConsumer):
                 "friend_id": data.get('friend_id'),
                 'type': 'chat_list_update',
                 'room_name': data.get('room_name'),
+                'is_read': data.get('is_read'),
                 'message': data.get('message'),
                 'sender_id': data.get('sender_id'),
                 'sender_name': data.get('sender_name'),
@@ -69,5 +70,6 @@ class UserConsumer(WebsocketConsumer):
             "message": event["message"],
             "sender_id": event["sender_id"],
             "sender_name": event["sender_name"],
-            "timestamp": event["timestamp"]
+            "timestamp": event["timestamp"],
+            "is_read": event["is_read"]
         }))

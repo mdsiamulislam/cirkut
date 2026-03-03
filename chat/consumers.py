@@ -109,6 +109,7 @@ class ChatConsumer(WebsocketConsumer):
                 "message": message,
                 "sender_id": self.user.id,
                 "sender_name": self.user.first_name,
+                'is_read': is_friend_online,
                 "timestamp": str(new_msg.timestamp)
             }
         )
