@@ -16,6 +16,14 @@ class Connection(models.Model):
     class Meta:
         unique_together = ('user', 'friend')
 
+class GroupChat(models.Model):
+    name = models.CharField(max_length=255)
+    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='group_chats')
+    room_name = models.CharField(unique=True, max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.name
+
 
 class ChatMessage(models.Model):
     room_name = models.CharField(max_length=100)
