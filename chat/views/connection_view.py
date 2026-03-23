@@ -10,7 +10,6 @@ from chat.serializers.utils.massage_notification import send_notification
 
 
 class ConnectionListView(APIView):
-
     permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
