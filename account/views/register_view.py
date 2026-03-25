@@ -24,7 +24,7 @@ class GoogleLoginView(APIView):
     def post(self, request):
         token = request.data.get('id_token')
     
-        WEB_CLIENT_ID = "13939260260-bgfkvjt54i7622rs536jam98lg3sua4k.apps.googleusercontent.com"
+        WEB_CLIENT_ID = "1066243577047-jabb09cb1n10r64p26hec04soprd686b.apps.googleusercontent.com"
         
         if not token:
             return Response({"error": "No token provided"}, status=status.HTTP_400_BAD_REQUEST)
