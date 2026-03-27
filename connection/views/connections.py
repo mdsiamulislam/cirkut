@@ -45,7 +45,7 @@ class ConnectionActionView(APIView):
         
         # Create a new connection request
         connection_request = ConnectionRequest.objects.create(sender=user, receiver_id=connection_id)
-        serializer = ConnectionRequestSerializer(connection_request)
+        serializer = ConnectionRequestSerializer(connection_request,context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

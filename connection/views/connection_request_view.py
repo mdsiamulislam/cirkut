@@ -14,7 +14,7 @@ class ConnectionRequestView(APIView):
     def get(self, request):
         user = request.user
         received_requests = ConnectionRequest.objects.filter(receiver=user, status='pending')
-        received_serializer = ConnectionRequestSerializer(received_requests, many=True)
+        received_serializer = ConnectionRequestSerializer(received_requests, many=True, context={'request': request})
 
         return Response(received_serializer.data, status=status.HTTP_200_OK)
     
