@@ -5,6 +5,7 @@ from account.views.user_view import UserDataView, UserSearchView
 from account.views.user_presence_view import UserPresenceView, SelectedUserPresenceView
 
 urlpatterns = [
+    
     path('register/', RegisterView.as_view(), name='register'),
     path('google-login/', GoogleLoginView.as_view(), name='google-login'),
 

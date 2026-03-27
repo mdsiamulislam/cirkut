@@ -9,6 +9,7 @@ from google.auth.transport import requests
 from account.serializers.register_serializer import RegisterSerializer
 from account.models import User
 
+
 class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)

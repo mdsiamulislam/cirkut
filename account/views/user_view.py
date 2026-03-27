@@ -17,7 +17,6 @@ class UserDataView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# Search user by name or username or email
 class UserSearchView(APIView):
     # permission_classes = [IsAuthenticated]
 
@@ -35,3 +34,5 @@ class UserSearchView(APIView):
         
         serializer = UserDataSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    

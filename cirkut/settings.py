@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from datetime import timedelta
 from datetime import timedelta
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,6 +31,9 @@ DEBUG = True
 # Add '10.0.2.2' and also '*' for development convenience
 ALLOWED_HOSTS = ['10.0.2.2', '127.0.0.1', 'localhost', '0.0.0.0', 'fathomable-derelictly-brittaney.ngrok-free.dev', 'pedigreed-corine-gratefully.ngrok-free.dev']
 
+#CSRF Verification Settings
+CSRF_TRUSTED_ORIGINS = ['https://pedigreed-corine-gratefully.ngrok-free.dev/', 'http://fathomable-derelictly-brittaney.ngrok-free.dev/']
+
 
 # Application definition
 
@@ -47,7 +51,9 @@ INSTALLED_APPS = [
 
     # Local apps
     'account',
-    'chat'
+    'connection',
+    'chat',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -55,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -126,8 +133,6 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
-#CSRF Verification Settings
-CSRF_TRUSTED_ORIGINS = ['https://pedigreed-corine-gratefully.ngrok-free.dev/', 'http://fathomable-derelictly-brittaney.ngrok-free.dev/']
 
 
 CHANNEL_LAYERS = {
@@ -151,4 +156,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
