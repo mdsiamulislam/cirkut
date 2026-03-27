@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
 
 from connection.models.user_connection_model import ConnectionRequest
 from connection.serializers.connection_request_serializer import ConnectionRequestSerializer
@@ -25,6 +26,7 @@ class ConnectionRequestActionView(APIView):
         try:
             connection_request = ConnectionRequest.objects.get(id=request_id, receiver=user, status='pending')
             connection_request.status = 'accepted'
+            connection_request.created_at = timezone.now()
             connection_request.save()
             return Response({'detail': 'Connection request accepted.'}, status=status.HTTP_200_OK)
         except ConnectionRequest.DoesNotExist:
