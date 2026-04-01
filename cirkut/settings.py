@@ -14,6 +14,7 @@ from datetime import timedelta
 from datetime import timedelta
 import os
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'channels',
+    'dbbackup',
 
     # Local apps
     'account',
@@ -72,6 +74,25 @@ ASGI_APPLICATION = 'cirkut.asgi.application'
 CROSS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'cirkut.urls'
+
+# সরাসরি টোকেন দিলে লাইব্রেরিটি সহজে পায়
+DROPBOX_OAUTH2_TOKEN = config('DROPBOX_ACCESS_TOKEN')
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    "dbbackup": {
+    "BACKEND": "cirkut.dropbox_storage.FixedDropBoxStorage",
+    "OPTIONS": {
+        "oauth2_access_token": DROPBOX_OAUTH2_TOKEN,
+        "root_path": "/backups",  # Dropbox এ যে folder এ রাখতে চাও
+        },
+    },
+}
+
 
 TEMPLATES = [
     {
