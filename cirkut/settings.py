@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'channels',
     'dbbackup',
+    'django_crontab',
 
     # Local apps
     'account',
@@ -92,6 +93,10 @@ STORAGES = {
         },
     },
 }
+
+CRONJOBS = [
+    ('0 0 * * *', 'cirkut.corn.backup_database') # প্রতিদিন রাত ১২ টায় ডাটাবেস ব্যাকআপ করবে
+]
 
 
 TEMPLATES = [
