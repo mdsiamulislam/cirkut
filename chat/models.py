@@ -18,8 +18,8 @@ class Connection(models.Model):
 
 
 class Conversation(models.Model):
-    # Duijon user-er moddhe connection
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='conversations')
+    room_name = models.CharField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True) # Shesh message-er shomoy track rakhar jonno
 
@@ -38,25 +38,6 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.sender.username}: {self.text[:20]}"
-
-class GroupChat(models.Model):
-    name = models.CharField(max_length=255)
-    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='group_chats')
-    room_name = models.CharField(unique=True, max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    def __str__(self):
-        return self.name
-
-
-class ChatMessage(models.Model):
-    room_name = models.CharField(max_length=100)
-    message = models.TextField()
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    is_read = models.BooleanField(default=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"[{self.room_name}] {self.user}: {self.message}"
 
 class MessageNotificationToken(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
