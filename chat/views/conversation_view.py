@@ -8,7 +8,7 @@ from chat.models import Conversation
 from chat.serializers.conversation_serializar import ConversationSerializer
 
 
-class ConversationListView(APIView):
+class ConversationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -39,3 +39,17 @@ class ConversationListView(APIView):
         conversation.participants.set(participant_ids + [user.id])
         serializer = ConversationSerializer(conversation, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+#Conversation Action View for Delete Conversation
+class ConversationActionView(APIView):
+    parser_classes = [IsAuthenticated]
+
+    def delete(self, request, conversation_id):
+        user = request.user
+        try:
+            conversation = Conversation.objects.get(id=conversation_id, participants=user)
+            conversation.delete()
+            return Response({'detail': 'Conversation deleted successfully.'}, status=status.HTTP_200_OK)
+        except Conversation.DoesNotExist:
+            return Response({'detail': 'Conversation not found.'}, status=status.HTTP_404_NOT_FOUND)

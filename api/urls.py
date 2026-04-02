@@ -5,7 +5,7 @@ from connection.views.connections import ConnectionsView, ConnectionActionView
 from connection.views.connection_request_view import ConnectionRequestView, ConnectionRequestActionView
 
 #Conversation views
-from chat.views.conversation_view import ConversationListView
+from chat.views.conversation_view import ConversationView, ConversationActionView
 
 urlpatterns = [
     path('v1/connections/', ConnectionsView.as_view(), name='connections'),
@@ -15,5 +15,6 @@ urlpatterns = [
 
 
     # Conversation APIs
-    path('v1/conversations/', ConversationListView.as_view(), name='conversation-list'),
+    path('v1/conversations/', ConversationView.as_view(), name='conversation-list'),
+    path('v1/conversations/<int:conversation_id>/', ConversationActionView.as_view(), name='conversation-action'),
 ]
