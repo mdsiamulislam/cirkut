@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 
 from connection.models.user_connection_model import ConnectionRequest
+from chat.models import Conversation
 from connection.serializers.connection_request_serializer import ConnectionRequestSerializer
 
 
@@ -28,6 +29,11 @@ class ConnectionRequestActionView(APIView):
             connection_request.status = 'accepted'
             connection_request.created_at = timezone.now()
             connection_request.save()
+
+            if not Conversation.objects.filter(participants=connection_request.sender).filter(participants=connection_request.receiver).exists():
+                conversation = Conversation.objects.create()
+                conversation.participants.set([connection_request.sender, connection_request.receiver])
+
             return Response({'detail': 'Connection request accepted.'}, status=status.HTTP_200_OK)
         except ConnectionRequest.DoesNotExist:
             return Response({'detail': 'Connection request not found.'}, status=status.HTTP_404_NOT_FOUND)

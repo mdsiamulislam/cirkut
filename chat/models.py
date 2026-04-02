@@ -16,6 +16,29 @@ class Connection(models.Model):
     class Meta:
         unique_together = ('user', 'friend')
 
+
+class Conversation(models.Model):
+    # Duijon user-er moddhe connection
+    participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='conversations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True) # Shesh message-er shomoy track rakhar jonno
+
+    def __str__(self):
+        return f"Conversation {self.id}"
+    
+class ChatMessage(models.Model):
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    text = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at'] # Purono message agey, notun niche
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.text[:20]}"
+
 class GroupChat(models.Model):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='group_chats')
