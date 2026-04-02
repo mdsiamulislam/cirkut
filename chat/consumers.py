@@ -3,7 +3,7 @@ from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
 from chat.serializers.utils.massage_notification import send_notification
-from .models import ChatMessage, MessageNotificationToken, Connection
+from .models import ChatMessage, MessageNotificationToken, Conversation
 from account.models import UserPresence
 
 User = get_user_model()
@@ -18,18 +18,25 @@ class ChatConsumer(WebsocketConsumer):
             self.close()
             return
 
-        # ১. গ্রুপে জয়েন করা
+        # ১. Conversation object khunje ber kora
+        try:
+            self.conversation = Conversation.objects.get(room_name=self.room_name)
+        except Conversation.DoesNotExist:
+            self.close()
+            return
+
+        # ২. গ্রুপে জয়েন করা
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
             self.channel_name
         )
         self.accept()
 
-        # ২. ইউজারকে অনলাইন সেট করা
+        # ৩. ইউজারকে অনলাইন সেট করা
         presence, _ = UserPresence.objects.get_or_create(user=self.user)
         presence.set_online()
 
-        # ৩. ফ্রেন্ডকে জানানো যে আমি অনলাইন হয়েছি
+        # ৪. সবাইকে জানানো যে আমি অনলাইন হয়েছি
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
@@ -39,20 +46,17 @@ class ChatConsumer(WebsocketConsumer):
             }
         )
 
-        # ৪. প্রিভিয়াস মেসেজ এবং ফ্রেন্ডের কারেন্ট স্ট্যাটাস পাঠানো
-        self.send_history_and_friend_status()
+        # ৫. প্রিভিয়াস মেসেজ পাঠানো
+        self.send_history()
 
     def disconnect(self, close_code):
-        # ১. ইউজারকে অফলাইন সেট করা
         if self.user.is_authenticated:
             try:
                 presence = UserPresence.objects.get(user=self.user)
-                print("Setting user offline:", self.user.first_name)
                 presence.set_offline()
             except UserPresence.DoesNotExist:
                 pass
 
-            # ২. ফ্রেন্ডকে জানানো যে আমি অফলাইন হয়েছি
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
                 {
@@ -62,7 +66,6 @@ class ChatConsumer(WebsocketConsumer):
                 }
             )
 
-        # ৩. গ্রুপ ত্যাগ করা
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name,
             self.channel_name
@@ -70,68 +73,57 @@ class ChatConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         data = json.loads(text_data)
-        message = data.get('message', '')
+        message_text = data.get('message', '')
 
         if not self.user.is_authenticated:
             return
 
-        friend_user = self.get_friend_user()
-        is_friend_online = False
-        if friend_user:
-            try:
-                friend_presence = UserPresence.objects.get(user=friend_user)
-                is_friend_online = friend_presence.is_online
-            except UserPresence.DoesNotExist:
-                pass
+        # participants theke onno user-der (friends) online status check kora
+        # Note: One-to-One chat er jonno is_read logic eivabe kaj korbe
+        friends = self.conversation.participants.exclude(id=self.user.id)
+        
+        # Simple Logic: At least ekjon friend online thakle is_read True hote pare (depend on your UX)
+        is_any_friend_online = UserPresence.objects.filter(user__in=friends, is_online=True).exists()
 
-        # ডাটাবেসে সেভ
+        # ডাটাবেসে সেভ (Notun Model onujayi)
         new_msg = ChatMessage.objects.create(
-            room_name=self.room_name,
-            message=message,
-            user=self.user,
-            is_read=is_friend_online
+            conversation=self.conversation,
+            sender=self.user,
+            text=message_text,
+            is_read=is_any_friend_online
         )
-        
 
-        # ফ্রেন্ডকে খুঁজে বের করা ও নোটিফিকেশন পাঠানো
-        
-        if friend_user:
-            self.handle_notification(friend_user, message)
+        # Notification pathano shobai ke (Except self)
+        for friend in friends:
+            self.handle_notification(friend, message_text)
             
-            friend_id = friend_user.id
-
+            # Protiti friend-er personal group-e chat list update pathano
             async_to_sync(self.channel_layer.group_send)(
-            f"user_{friend_id}", # ফ্রেন্ডের পার্সোনাল গ্রুপে পাঠাচ্ছি
-            {
-                "friend_id": friend_id,
-                "type": "chat_list_update", # UserConsumer-এর মেথডটি কল হবে
-                "room_name": self.room_name,
-                "message": message,
-                "sender_id": self.user.id,
-                "sender_name": self.user.first_name,
-                'is_read': is_friend_online,
-                "timestamp": str(new_msg.timestamp)
-            }
-        )
-
-        
+                f"user_{friend.id}",
+                {
+                    "type": "chat_list_update",
+                    "room_name": self.room_name,
+                    "message": message_text,
+                    "sender_id": self.user.id,
+                    "sender_name": self.user.first_name,
+                    "is_read": is_any_friend_online,
+                    "timestamp": str(new_msg.created_at)
+                }
+            )
 
         # গ্রুপে মেসেজ ব্রডকাস্টিং
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
                 'type': 'chat_message',
-                'message': message,
+                'message': message_text,
                 'user': self.user.id,
                 'name': self.user.first_name,
-                'timestamp': new_msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                'timestamp': new_msg.created_at.strftime('%Y-%m-%d %H:%M:%S')
             }
         )
 
-    # --- হ্যান্ডলার মেথডসমূহ ---
-
     def chat_message(self, event):
-        # রিয়েল টাইমে মেসেজ রিসিভ করা
         self.send(text_data=json.dumps({
             'type': 'message',
             'message': event['message'],
@@ -141,43 +133,23 @@ class ChatConsumer(WebsocketConsumer):
         }))
 
     def user_status_update(self, event):
-        # ফ্রেন্ড অনলাইন বা অফলাইন হলে এই মেথড কল হবে
-        # নিজের স্ট্যাটাস নিজে আপডেট করার দরকার নেই
         if event['user_id'] != self.user.id:
             self.send(text_data=json.dumps({
                 'type': 'status_update',
+                'user_id': event['user_id'],
                 'active': event['status']
             }))
 
-    def send_history_and_friend_status(self):
-        # ফ্রেন্ডের বর্তমান অবস্থা চেক করা
-        friend_user = self.get_friend_user()
-        is_friend_online = False
-        if friend_user:
-            try:
-                friend_presence = UserPresence.objects.get(user=friend_user)
-                is_friend_online = friend_presence.is_online
-            except UserPresence.DoesNotExist:
-                pass
-
-        # হিস্ট্রি মেসেজ পাঠানো
-        previous_messages = ChatMessage.objects.filter(room_name=self.room_name).order_by('timestamp')
+    def send_history(self):
+        previous_messages = self.conversation.messages.all().order_by('created_at')
         for msg in previous_messages:
             self.send(text_data=json.dumps({
                 'type': 'history',
-                'message': msg.message,
-                'user': msg.user.id,
-                'name': msg.user.first_name,
-                'active': is_friend_online, # প্রথমবার লোড হওয়ার সময় স্ট্যাটাস
-                'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                'message': msg.text,
+                'user': msg.sender.id,
+                'name': msg.sender.first_name,
+                'timestamp': msg.created_at.strftime('%Y-%m-%d %H:%M:%S')
             }))
-
-    def get_friend_user(self):
-        try:
-            connection = Connection.objects.get(room_name=self.room_name)
-            return connection.friend if connection.user == self.user else connection.user
-        except Connection.DoesNotExist:
-            return None
 
     def handle_notification(self, friend_user, message):
         try:

@@ -14,7 +14,7 @@ class ConversationView(APIView):
     def get(self, request):
         user = request.user
         conversations = Conversation.objects.filter(participants=user).order_by('-updated_at')
-        serializer = ConversationSerializer(conversations, many=True, context={'request': request})
+        serializer = ConversationSerializer(conversations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request):

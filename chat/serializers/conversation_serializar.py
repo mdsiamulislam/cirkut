@@ -5,9 +5,15 @@ from account.serializers.user_data_serializer import UserPublicDataSerializer
 
 class ConversationSerializer(serializers.ModelSerializer):
     participants = UserPublicDataSerializer(many=True, read_only=True)
+
+    # Read only field for room_name
+    room_name = serializers.CharField(read_only=True)
+
     class Meta:
         model = Conversation
-        fields = ['id', 'participants', 'created_at', 'updated_at']
+        fields = ['id', 'participants', 'room_name', 'created_at', 'updated_at']
+
+
 
 
     # Remove Current User from Participants List

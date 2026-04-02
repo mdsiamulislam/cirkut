@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.conf import settings
 
@@ -21,10 +23,20 @@ class Conversation(models.Model):
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='conversations')
     room_name = models.CharField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True) # Shesh message-er shomoy track rakhar jonno
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.room_name:
+            self.room_name = self.generate_room_name()
+        super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"Conversation {self.id}"
+    
+    def generate_room_name(self):
+        return uuid.uuid4().hex
+    
     
 class ChatMessage(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
